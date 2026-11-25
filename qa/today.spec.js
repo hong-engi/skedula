@@ -109,3 +109,44 @@ test('캘린더에서 월간 날짜를 열고 주간·오늘으로 전환',async
   await page.getByRole('button',{name:'오늘',exact:true}).click();
   await expect(page.getByRole('region',{name:'시간표'})).toBeVisible();
 });
+
+test('월간과 주간의 배정 시간 순서가 일치한다',async({page})=>{
+  await page.getByRole('button',{name:'할 일',exact:true}).click();
+  await page.locator('.row').filter({hasText:'회신 보내기'}).getByRole('button',{name:'작업 시간 편집'}).click();
+  await page.getByRole('button',{name:'저장',exact:true}).click();
+  await page.getByRole('button',{name:'캘린더',exact:true}).click();
+  await page.getByRole('button',{name:'월간',exact:true}).click();
+  const today=page.locator('.month-day[aria-current=date]');
+  expect(await today.locator('span').allTextContents()).toEqual(['회신 보내기','치과 예약']);
+});
+
+test('연말 주간에 새해 약속을 만들고 이동 시간을 전날에도 표시한다',async({page})=>{
+  await page.clock.install({time:new Date(2026,11,31,10)});
+  await page.reload();
+  await page.getByRole('button',{name:'주간',exact:true}).click();
+  await page.getByRole('button',{name:'2027-01-01 약속 추가'}).click();
+  const form=page.locator('#booking');
+  await form.getByLabel('이름').fill('새해 출발');
+  await form.getByLabel('시작').fill('00:10');
+  await form.getByLabel('종료').fill('00:40');
+  await form.getByLabel('이동 시간(분)').fill('30');
+  await form.getByRole('button',{name:'저장'}).click();
+  const yesterday=page.locator('.week-day').filter({has:page.getByRole('button',{name:'2026-12-31 약속 추가'})});
+  const tomorrow=page.locator('.week-day').filter({has:page.getByRole('button',{name:'2027-01-01 약속 추가'})});
+  await expect(yesterday.locator('.travel-item')).toContainText('23:40–24:00');
+  await expect(tomorrow.locator('.travel-item')).toContainText('00:00–00:10');
+  await page.getByRole('button',{name:'월간',exact:true}).click();
+  await page.getByRole('button',{name:'다음 달',exact:true}).click();
+  await expect(page.getByRole('button',{name:'2027-01-01 주간 보기'})).toContainText('새해 출발');
+});
+
+test('키보드로 월간 날짜를 열면 그날의 약속을 이어서 추가한다',async({page})=>{
+  await page.getByRole('button',{name:'월간',exact:true}).click();
+  const day=page.locator('.month-day:not(.outside)').nth(10);
+  const target=(await day.getAttribute('aria-label')).split(' ')[0];
+  await day.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button',{name:target+' 약속 추가'})).toBeFocused({timeout:700});
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#bookingDate')).toHaveValue(target);
+});

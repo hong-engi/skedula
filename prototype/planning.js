@@ -30,6 +30,11 @@ function calendarBlocks(date){
   }
   return blocks
 }
+function scheduledItems(date){
+  const items=calendarBlocks(date);
+  if(date===dayKey)items.push(...tasks.filter(t=>t.at!=null&&!t.inbox));
+  return items.sort((a,b)=>a.at-b.at)
+}
 function agendaEntry(when,title,action){
   const entry=button('',action);
   entry.append(node('span',when,'agenda-time'),'　',node('span',title));
@@ -47,10 +52,7 @@ function renderWeek(){
     day.append(node('strong',date.slice(-2)),node('small',localDate(date).toLocaleDateString('ko-KR',{weekday:'short'})));
     if(date===dayKey)row.classList.add('is-today');
     const items=node('div',null,'agenda');
-    const events=calendarBlocks(date);
-    if(date===dayKey)events.push(...tasks.filter(t=>t.at!=null&&!t.inbox));
-    events.sort((a,b)=>a.at-b.at);
-    for(const t of events){
+    for(const t of scheduledItems(date)){
       const line=agendaEntry(range(t),t.title+(t.repeat==='daily'?' · 매일':t.repeat==='weekly'?' · 매주':''),()=>{
         if(t.fixed)editBooking(t.source);else editDetails(t)
       });
@@ -60,6 +62,7 @@ function renderWeek(){
       items.append(agendaEntry(('마감 '+(t.dueTime||'')).trim(),t.title,()=>editDetails(t)))
     }
     const add=icon('＋',date+' 약속 추가',()=>editBooking(null,date));
+    add.id='add-booking-'+date;
     row.append(day,items,add);days.append(row)
   }
 }
@@ -76,12 +79,13 @@ function renderMonth(){
   for(let i=0;i<42;i++){
     const date=datePlus(start,i),inMonth=date.startsWith(month);
     if(i%7===0&&date>first&&!inMonth)break;
-    const cell=button('',()=>{anchorDate=date;navigate('주간')});
+    const cell=button('',()=>{
+      anchorDate=date;navigate('주간');el('add-booking-'+date).focus()
+    });
     cell.className='month-day';cell.classList.toggle('outside',!inMonth);
     if(date===dayKey)cell.setAttribute('aria-current','date');
     cell.setAttribute('aria-label',date+' 주간 보기');cell.append(node('b',Number(date.slice(-2))));
-    const entries=calendarBlocks(date).filter(t=>!t.buffer).sort((a,b)=>a.at-b.at).map(t=>t.title);
-    if(date===dayKey)entries.push(...tasks.filter(t=>t.at!=null&&!t.inbox).map(t=>t.title));
+    const entries=scheduledItems(date).filter(t=>!t.buffer).map(t=>t.title);
     entries.push(...tasks.filter(t=>!t.inbox&&!t.done&&t.due===date).map(t=>'마감 · '+t.title));
     for(const text of entries.slice(0,2))cell.append(node('span',text));
     if(entries.length>2)cell.append(node('small','+'+(entries.length-2)));
