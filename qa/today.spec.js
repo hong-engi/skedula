@@ -79,3 +79,22 @@ test('메모를 저장했다가 버킷리스트로 옮겨 오늘에 선택하기
   await page.getByRole('button',{name:'오늘',exact:true}).click();
   await expect(page.locator('#tasks')).toContainText('한강 자전거');
 });
+
+test('중요도와 남은 시간에 따라 카드색 갱신', async ({ page }) => {
+  await page.clock.install({time:new Date(2026,10,25,9,0)});
+  await page.reload();
+  await page.getByRole('button',{name:'할 일',exact:true}).click();
+  const row=page.locator('.row').filter({hasText:'회신 보내기'});
+  const heat=()=>row.evaluate(r=>Number(r.style.getPropertyValue('--heat')));
+  const initial=await heat();
+  await row.getByRole('button',{name:'회신 보내기 편집'}).click();
+  await page.getByLabel('중요도 (1–10)').fill('10');
+  await page.getByRole('button',{name:'저장',exact:true}).click();
+  const important=await heat();
+  expect(important).toBeGreaterThan(initial);
+  await page.clock.fastForward('08:01:00');
+  await expect.poll(heat).toBeGreaterThan(important);
+  await expect(row.locator('time')).toContainText('마감 지남');
+  await row.getByRole('checkbox').check();
+  expect(await heat()).toBe(0);
+});

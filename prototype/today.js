@@ -20,10 +20,21 @@ for(const t of tasks){
   if(previous && previous.day!==dayKey){t.today=false;delete t.at}
 }
 function daysLeft(t){return t.due?(Date.parse(t.due)-Date.parse(dayKey))/86400000:Infinity}
+function hoursToDeadline(t){
+  if(!t.due)return Infinity;
+  const deadline=new Date(t.due+'T'+(t.dueTime||'23:59:59.999'));
+  return (deadline.getTime()-Date.now())/3600000
+}
+function paintUrgency(row,t){
+  const priority=(t.level-1)/9;
+  const proximity=2**(-Math.max(0,hoursToDeadline(t))/24);
+  const heat=t.done?0:0.30*priority+proximity*(0.55+0.15*priority);
+  row.style.setProperty('--heat',heat.toFixed(4));
+}
 function dueText(t){
   const d=daysLeft(t);
   if(!Number.isFinite(d))return '마감 없음';
-  const relative=d<0?Math.abs(d)+'일 지남':d===0?'오늘 마감':d===1?'내일 마감':'D−'+d;
+  const relative=d<0?Math.abs(d)+'일 지남':d===0?(t.dueTime&&hoursToDeadline(t)<0?'마감 지남':'오늘 마감'):d===1?'내일 마감':'D−'+d;
   return relative+(t.dueTime?' '+t.dueTime:'')
 }
 function priorityBand(t){
@@ -77,7 +88,7 @@ function render(){
     badge.title='중요도 '+t.level+'점';badge.setAttribute('role','img');badge.setAttribute('aria-label',badge.title);
     const info=node('div',null,'info');info.append(name);
     if(t.at!=null)info.append(node('div',range(t),'meta'));
-    row.dataset.index=tasks.indexOf(t);row.style.setProperty('--importance',t.level/10);row.classList.toggle('finished',!!t.done);
+    row.dataset.index=tasks.indexOf(t);paintUrgency(row,t);row.classList.toggle('finished',!!t.done);
     row.append(check,badge,info);
     if(t.due){
       const due=node('time',dueText(t),daysLeft(t)<=3?'due urgent':'due');
@@ -191,7 +202,13 @@ render();
 if(page==='오늘')jumpToNow();
 function refreshClock(){
   if(new Date().toLocaleDateString('sv-SE')!==dayKey && !document.querySelector('dialog[open]')){location.reload();return}
-  updateNow()
+  updateNow();
+  for(const row of el('tasks').querySelectorAll('.row')){
+    const t=tasks[Number(row.dataset.index)];
+    if(!t)continue;
+    paintUrgency(row,t);
+    const due=row.querySelector('.due');if(due)due.textContent=dueText(t);
+  }
 }
 function nextMinute(){
   setTimeout(()=>{refreshClock();nextMinute()},60000-Date.now()%60000)
