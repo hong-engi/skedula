@@ -4,7 +4,14 @@
 <aside><strong>Skedula</strong><nav aria-label="페이지"><button data-page="오늘">오늘</button><button data-page="주간">주간</button><button data-page="메모함">메모함</button><button data-page="할 일">할 일</button><button data-page="버킷리스트">버킷리스트</button></nav></aside>
 <main><header><div><small id="date"></small><h1 id="page"></h1></div><button id="add" title="새 항목" aria-label="새 항목">＋</button></header>
 <div id="layout"><section id="schedule"><h2 id="schedule-title">시간표</h2><div id="scroll" tabindex="0" role="region" aria-labelledby="schedule-title"><div id="timeline"></div></div></section><section id="list"><h2 id="listTitle"></h2><div id="tasks"></div></section></div>
-<section id="week" hidden><div class="week-bar"><h2 id="weekRange"></h2><div><button id="prevWeek" aria-label="이전 주">‹</button> <button id="thisWeek">이번 주</button> <button id="nextWeek" aria-label="다음 주">›</button></div></div><div id="weekDays"></div></section>
+<section id="week" hidden><div class="week-bar">
+  <div class="week-pager" role="group" aria-label="주 이동">
+    <button id="prevWeek" class="week-arrow" aria-label="이전 주" title="이전 주"></button>
+    <h2 id="weekRange" aria-live="polite"></h2>
+    <button id="nextWeek" class="week-arrow" aria-label="다음 주" title="다음 주"></button>
+  </div>
+  <button id="thisWeek" hidden>이번 주로</button>
+</div><div id="weekDays"></div></section>
 <section id="inbox" hidden><form id="capture"><input id="idea" maxlength="200" placeholder="떠오른 생각…" aria-label="빠른 메모" required><button>담기</button></form><div id="ideas"></div></section></main>
 <dialog id="appointment"><form id="booking"><h2 id="bookingTitle"></h2><label>이름<input id="bookingName" maxlength="100" required></label><label>날짜<input type="date" id="bookingDate" required></label><div class="pair"><label>시작<input type="time" id="bookingStart" required></label><label>종료<input type="time" id="bookingEnd" required></label></div><div class="pair"><label>반복<select id="repeat"><option value="">한 번</option><option value="daily">매일</option><option value="weekly">매주</option></select></label><label>이동 시간(분)<input id="travel" type="number" min="0" max="720" required></label></div><footer><button type="button" id="removeBooking">삭제</button><button type="button" id="closeBooking">취소</button><button class="primary">저장</button></footer></form></dialog>
 <dialog id="editor"><form id="form"><h2 id="heading"></h2><label id="nameLabel">이름<input id="titleInput" maxlength="100"></label>

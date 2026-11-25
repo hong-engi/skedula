@@ -33,7 +33,9 @@ function calendarBlocks(date){
 function renderWeek(){
   const start=weekStart(),end=datePlus(start,6);
   const format=k=>localDate(k).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
-  el('weekRange').textContent=format(start)+' – '+format(end);
+  const sameMonth=start.slice(0,7)===end.slice(0,7);
+  el('weekRange').textContent=format(start)+' – '+(sameMonth?Number(end.slice(-2))+'일':format(end));
+  el('thisWeek').hidden=weekOffset===0;
   const days=el('weekDays');days.replaceChildren();
   for(let i=0;i<7;i++){
     const date=datePlus(start,i),row=node('div',null,'week-day'),day=node('div',null,'day-label');
@@ -83,7 +85,7 @@ function renderInbox(){
 document.addEventListener('DOMContentLoaded',()=>{
   el('prevWeek').onclick=()=>{weekOffset--;renderWeek()};
   el('nextWeek').onclick=()=>{weekOffset++;renderWeek()};
-  el('thisWeek').onclick=()=>{weekOffset=0;renderWeek()};
+  el('thisWeek').onclick=()=>{weekOffset=0;renderWeek();el('nextWeek').focus({preventScroll:true})};
   el('booking').oninput=()=>el('bookingEnd').setCustomValidity('');
   el('closeBooking').onclick=()=>el('appointment').close();
   el('removeBooking').onclick=()=>{
