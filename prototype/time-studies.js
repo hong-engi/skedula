@@ -33,27 +33,21 @@ track.onpointerdown=e=>{if(e.button!==0)return;anchor=minute(e);track.setPointer
 track.onpointermove=e=>{if(anchor!==null){const m=minute(e);draw(Math.min(m,anchor),Math.max(15,Math.abs(m-anchor)))}};
 track.onpointerup=track.onpointercancel=()=>anchor=null;
 track.onkeydown=e=>{if(!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const delta=e.key==='ArrowUp'?-15:15,s=state[0];draw(s.at+(e.shiftKey?0:delta),e.shiftKey?Math.max(15,Math.min(end-s.at,s.len+delta)):s.len)};
-let mode='hour';
+
 function chips(i,action){
   const container=panels[i].querySelector('.chips');
   container.replaceChildren(...[15,30,60].map(n=>btn(n+'분',state[i].len===n,()=>action(n))))
 }
-function dial(){
-  const p=panels[1],s=state[1],h=Math.floor(s.at/60),m=s.at%60;
-  p.querySelector('.segments').replaceChildren(...[['hour','오후 '+(h-12)+'시'],['minute',m+'분']].map(([key,label])=>btn(label,mode===key,()=>{mode=key;dial()})));
-  const face=p.querySelector('.dial');face.replaceChildren();const isHour=mode==='hour';
-  face.style.setProperty('--angle',(isHour?h%12*30:m*6)+'deg');
-  for(let j=0;j<12;j++){const value=isHour?j||12:j*5;
-    const at=isHour?(12+value)*60+m:h*60+value;
-    const b=btn(isHour?value:String(value).padStart(2,'0'),isHour?value===h-12:value===m,()=>{
-      set(1,at,s.len);if(isHour)mode='minute';dial()
-    });b.disabled=at<start||at+s.len>end;b.style.left=50+39*Math.sin(j*Math.PI/6)+'%';b.style.top=50-39*Math.cos(j*Math.PI/6)+'%';face.append(b)
+const resetStudyClock=createRangeClock(document.querySelector('#studyClock'),(at,until)=>{
+  Object.assign(state[1],{at,len:until-at,saved:false});result(1);
+  if(until<=at||at<start||until>end){
+    panels[1].querySelector('.apply').disabled=true;
+    panels[1].querySelector('output').textContent=until<=at?'종료 시각을 확인하세요':'13–17시 안에서 선택하세요';
   }
-  chips(1,n=>{set(1,s.at,n);dial()})
-}
+});
 function slots(){
   const s=state[2],box=panels[2].querySelector('.slots');box.replaceChildren();
   for(let t=start;t+s.len<=end;t+=30)if(!overlaps(t,s.len))box.append(btn(clock(t),t===s.at,()=>{set(2,t,s.len);slots()}));
   chips(2,n=>{let at=s.at;if(at+n>end||overlaps(at,n))at=start;set(2,at,n);slots()})
 }
-dial();slots();panels.forEach((_,i)=>result(i))
+resetStudyClock(810,840);slots();panels.forEach((_,i)=>result(i))

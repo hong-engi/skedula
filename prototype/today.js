@@ -109,30 +109,34 @@ grid.onpointerup=e=>{if(!drawing)return;const [a,n]=bounds(drawing.anchor,snap(e
 function dialog(timed){
   el('level').disabled=timed;el('details').hidden=timed;el('timing').hidden=!timed;el('nameLabel').hidden=timed;
   el('titleInput').disabled=timed;el('titleInput').required=!timed;
-  el('minutes').disabled=!timed;el('start').disabled=!timed;el('titleInput').value='';el('editor').showModal()
+  el('titleInput').value='';el('editor').showModal()
 }
 function openTime(task,at,len){
   const choice=el('choice');choice.replaceChildren();
   tasks.forEach((t,i)=>{if(!t.done&&(!task||task===t)){const option=node('option',t.title+(t.at!=null?' · '+range(t):''));option.value=i;choice.append(option)}});
   const fresh=node('option','새 작업…');fresh.value='new';if(!task)choice.append(fresh);
   choice.disabled=!!task;if(task)choice.value=tasks.indexOf(task);else choice.value=Array.from(choice.options).find(o=>o.value!=='new' && tasks[o.value].at==null)?.value??'new';
-  el('start').value=clock(at);el('minutes').max=Math.max(180,len);el('minutes').value=len;
-  el('heading').textContent='작업 시간';dialog(true);choice.onchange();updateRange()
+  draftStart=at;draftEnd=at+len;resetClock(draftStart,draftEnd);
+  el('heading').textContent='작업 시간';dialog(true);choice.onchange()
 }
-function startMinute(){const [h,m]=el('start').value.split(':').map(Number);return h*60+m}
-function updateRange(){const at=startMinute();if(!Number.isFinite(at))return;el('minutes').max=1440-at;el('span').textContent=range({at,len:Number(el('minutes').value)});updateTimeHint()}
+let draftStart=0,draftEnd=30;
+const resetClock=createRangeClock(el('rangeClock'),(at,end)=>{
+  draftStart=at;draftEnd=end;updateTimeHint()
+});
 function updateTimeHint(){
   const chosen=el('choice').value;
   const task=chosen==='new'?null:tasks[Number(chosen)];
-  const at=startMinute(),end=at+Number(el('minutes').value);
+  const at=draftStart,end=draftEnd;
+  el('form').querySelector('.primary').disabled=end<=at;
+  if(end<=at){el('hint').textContent='종료 시각을 시작보다 늦게 선택하세요.';return}
   const clash=[fixed,...tasks].find(t=>t!==task&&t.at!=null&&t.at<end&&at<t.at+t.len);
   el('hint').textContent=[task?.at!=null?'기존 배정 '+range(task):'',clash?'겹치는 일정 · '+clash.title:''].filter(Boolean).join(' / ')
 }
-el('start').oninput=el('minutes').oninput=updateRange;
+
 el('choice').onchange=()=>{const fresh=el('choice').value==='new';el('nameLabel').hidden=!fresh;el('titleInput').disabled=!fresh;el('titleInput').required=fresh;updateTimeHint()};
 let detailsTask=null;
 function editDetails(t){
-  detailsTask=t;
+  detailsTask=t;el('form').querySelector('.primary').disabled=false;
   el('heading').textContent=t?'항목 편집':page==='버킷리스트'?'버킷리스트에 추가':'할 일 추가';
   dialog(false);el('titleInput').value=t?.title??'';el('titleInput').focus();
   el('level').value=t?.level??5;el('due').value=t?.due??'';el('dueTime').value=t?.dueTime??'';
@@ -143,11 +147,12 @@ el('add').onclick=()=>editDetails(null);
 el('cancel').onclick=()=>el('editor').close();
 el('form').onsubmit=e=>{
   e.preventDefault();const timed=!el('timing').hidden;let t;
+  if(timed&&draftEnd<=draftStart)return;
   if(!timed||el('choice').value==='new'){
     const title=el('titleInput').value.trim();if(!title)return el('titleInput').focus();
     t=(!timed&&detailsTask)||{title,level:5,due:'',dueTime:'',group:page==='버킷리스트'?'버킷리스트':'내 할 일',reason:'직접 추가',today:page==='오늘'};t.title=title;if(!timed)Object.assign(t,{level:Number(el('level').value),due:el('due').value,dueTime:el('dueTime').value});if(!tasks.includes(t))tasks.push(t)
   }else t=tasks[Number(el('choice').value)];
-  if(timed)Object.assign(t,{at:startMinute(),len:Number(el('minutes').value),today:true});
+  if(timed)Object.assign(t,{at:draftStart,len:draftEnd-draftStart,today:true});
   el('editor').close();save(t)
 };
 render();
