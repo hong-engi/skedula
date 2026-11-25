@@ -53,3 +53,8 @@ h1{font-size:29px;letter-spacing:-1px}h2{font-size:16px}
 #monthGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 #monthGrid>small{padding:6px 8px}.month-day{min-height:80px;border-radius:0;border-top:1px solid #e0e5dc;background:transparent;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:7px;text-align:left}.month-day:hover{background:#edf2eb}.month-day b{font-size:13px}.month-day span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#475e50}.month-day.outside{opacity:.5}.month-day[aria-current=date] b{background:#315a43;color:white;border-radius:4px;padding:1px 4px}
 #calendarViews:not([hidden])~#layout #scroll{height:calc(100vh - 260px)}
+#calendarMemo{min-width:0;max-width:min(48%,520px);display:flex;align-items:center;gap:4px;border-left:2px solid #c4d0c1;padding-left:10px;margin:0 auto}
+#calendarMemo button{background:transparent;color:#506456;font-size:14px}
+#calendarMemo #memoText{min-width:0;padding:4px;text-align:left;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+#nextMemo{flex:none;padding:4px 8px}
+@media(max-width:610px){header:has(#calendarMemo:not([hidden])){flex-wrap:wrap}#calendarMemo{order:3;flex-basis:100%;max-width:100%;margin:4px 0 0}}

@@ -73,7 +73,33 @@ function navigate(next){
 }
 el('calendarViews').querySelectorAll('button').forEach(b=>b.onclick=()=>navigate(b.textContent));
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>navigate(b.dataset.page));
+let displayedMemo=null, memoTimer;
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+function showCalendarMemo(advance=false){
+  clearTimeout(memoTimer);
+  const box=el('calendarMemo');
+  const notes=tasks.filter(t=>t.inbox);
+  box.hidden=!views.includes(page)||!notes.length;
+  if(box.hidden)return;
+  const index=notes.indexOf(displayedMemo);
+  displayedMemo=notes[index<0?0:(index+Number(advance))%notes.length];
+  el('memoText').textContent=displayedMemo.title;
+  el('memoText').title=displayedMemo.title+' · 메모함 열기';
+  el('nextMemo').hidden=notes.length<2;
+  if(notes.length>1 && !document.hidden && !reducedMotion.matches &&
+     !box.matches(':hover, :focus-within') && !document.querySelector('dialog[open]')){
+    memoTimer=setTimeout(()=>showCalendarMemo(!document.querySelector('dialog[open]')),12000)
+  }
+}
+el('memoText').onclick=()=>navigate('메모함');
+el('nextMemo').onclick=()=>showCalendarMemo(true);
+for(const event of ['pointerenter','focusin'])el('calendarMemo').addEventListener(event,()=>clearTimeout(memoTimer));
+for(const event of ['pointerleave','focusout'])el('calendarMemo').addEventListener(event,()=>queueMicrotask(()=>showCalendarMemo()));
+document.addEventListener('visibilitychange',()=>showCalendarMemo());
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('close',()=>showCalendarMemo()));
+reducedMotion.addEventListener('change',()=>showCalendarMemo());
 function render(){
+  showCalendarMemo();
   const today=page==='오늘', bucket=page==='버킷리스트';
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.page===(views.includes(page)?'캘린더':page)?'page':'false'));
   el('calendarViews').hidden=!views.includes(page);

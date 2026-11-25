@@ -150,3 +150,25 @@ test('키보드로 월간 날짜를 열면 그날의 약속을 이어서 추가�
   await page.keyboard.press('Enter');
   await expect(page.locator('#bookingDate')).toHaveValue(target);
 });
+
+test('메모 미리보기 순환, 캘린더 전환과 분류 반영',async({page})=>{
+  const go=name=>page.getByRole('button',{name,exact:true}).click();
+  const preview=page.locator('#calendarMemo');
+  await expect(preview).toBeHidden();
+  await go('메모함');
+  for(const title of ['수요일 산책','전시 보러 가기']){
+    await page.getByLabel('빠른 메모').fill(title);await go('담기')
+  }
+  await page.clock.install();
+  await go('캘린더');
+  await expect(preview).toContainText('수요일 산책');
+  await page.clock.fastForward(12100);
+  await expect(preview).toContainText('전시 보러 가기');
+  for(const view of ['주간','월간']){await go(view);await expect(preview).toContainText('전시 보러 가기')}
+  await go('다음 메모');
+  await page.locator('#memoText').click();
+  await page.locator('.idea-row').filter({hasText:'수요일 산책'}).getByRole('button',{name:'할 일로'}).click();
+  await go('캘린더');
+  await expect(preview).toContainText('전시 보러 가기');
+  await expect(page.locator('#nextMemo')).toBeHidden();
+});
