@@ -3,9 +3,10 @@ const el=id=>document.getElementById(id), now=new Date(), key='skedula-preview-v
 el('date').textContent=now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'});
 const seeds=[['회신 보내기','마감 임박','오늘 17:00 마감'],['제품 방향 문서 쓰기','중요한 일','중요 · 다음 달 마감'],['포트폴리오 정리','중요한 일','중요 · 마감 없음'],['사진 산책','버킷리스트','하고 싶은 일']];
 const dayKey=now.toLocaleDateString('sv-SE');
-const dataKey='skedula-tasks-v2';
+const dataKey='skedula-tasks-v3';
 const stored=JSON.parse(localStorage.getItem(dataKey)||'null');
-let tasks=stored?.tasks ?? JSON.parse(localStorage.getItem(key)||'null') ?? seeds.map(([title,group,reason])=>({title,group,reason}));
+const previous=stored??JSON.parse(localStorage.getItem('skedula-tasks-v2')||'null');
+let tasks=previous?.tasks ?? JSON.parse(localStorage.getItem(key)||'null') ?? seeds.map(([title,group,reason])=>({title,group,reason}));
 function dayAfter(days){
   const date=new Date(now);date.setDate(date.getDate()+days);return date.toLocaleDateString('sv-SE')
 }
@@ -15,7 +16,8 @@ for(const t of tasks){
     t.due=t.reason==='오늘 17:00 마감'?dayKey:t.reason?.includes('다음 달')?dayAfter(30):'';
     t.dueTime=t.reason==='오늘 17:00 마감'?'17:00':'';
   }
-  if(stored && stored.day!==dayKey){t.today=false;delete t.at}
+  if(!stored)t.level=({1:1,2:5,3:10})[t.level]??5;
+  if(previous && previous.day!==dayKey){t.today=false;delete t.at}
 }
 function daysLeft(t){return t.due?(Date.parse(t.due)-Date.parse(dayKey))/86400000:Infinity}
 function dueText(t){
@@ -24,7 +26,6 @@ function dueText(t){
   const relative=d<0?Math.abs(d)+'일 지남':d===0?'오늘 마감':d===1?'내일 마감':'D−'+d;
   return relative+(t.dueTime?' '+t.dueTime:'')
 }
-const levels=['','낮음','보통','높음'];
 function priorityBand(t){
   const days=daysLeft(t);return days<=0?0:days<=3?1:2
 }
@@ -65,9 +66,9 @@ function render(){
     check.setAttribute('aria-label',t.title+' 완료');
     const name=button(t.title,()=>editDetails(t));name.className='task-name';name.title='이름, 중요도, 마감 편집';name.setAttribute('aria-label',t.title+' 편집');
     const meta=node('div',null,'meta');
-    meta.append(node('span','중요도 '+levels[t.level],'level'),node('span',dueText(t),daysLeft(t)<=3?'due urgent':'due'));
+    meta.append(node('span','중요도 '+t.level,'level'),node('span',dueText(t),daysLeft(t)<=3?'due urgent':'due'));
     if(t.at!=null)meta.append(node('span',range(t)));
-    row.dataset.index=tasks.indexOf(t);row.dataset.level=t.level;row.classList.toggle('finished',!!t.done);
+    row.dataset.index=tasks.indexOf(t);row.style.setProperty('--importance',t.level/10);row.classList.toggle('finished',!!t.done);
     const info=node('div',null,'info');info.append(name,meta);row.append(check,info);
     if(!t.done){
       const actions=node('div',null,'actions');row.append(actions);
@@ -106,7 +107,7 @@ grid.onpointermove=e=>{if(!drawing)return;const [a,n]=bounds(drawing.anchor,snap
 grid.onpointercancel=()=>{drawing?.ghost.remove();drawing=null};
 grid.onpointerup=e=>{if(!drawing)return;const [a,n]=bounds(drawing.anchor,snap(e));grid.onpointercancel();openTime(null,a,n)};
 function dialog(timed){
-  el('details').hidden=timed;el('timing').hidden=!timed;el('nameLabel').hidden=timed;
+  el('level').disabled=timed;el('details').hidden=timed;el('timing').hidden=!timed;el('nameLabel').hidden=timed;
   el('titleInput').disabled=timed;el('titleInput').required=!timed;
   el('minutes').disabled=!timed;el('start').disabled=!timed;el('titleInput').value='';el('editor').showModal()
 }
@@ -134,7 +135,7 @@ function editDetails(t){
   detailsTask=t;
   el('heading').textContent=t?'항목 편집':page==='버킷리스트'?'버킷리스트에 추가':'할 일 추가';
   dialog(false);el('titleInput').value=t?.title??'';el('titleInput').focus();
-  el('level').value=t?.level??2;el('due').value=t?.due??'';el('dueTime').value=t?.dueTime??'';
+  el('level').value=t?.level??5;el('due').value=t?.due??'';el('dueTime').value=t?.dueTime??'';
   el('due').oninput()
 }
 el('due').oninput=()=>{el('dueTime').disabled=!el('due').value;if(el('dueTime').disabled)el('dueTime').value=''};
@@ -144,7 +145,7 @@ el('form').onsubmit=e=>{
   e.preventDefault();const timed=!el('timing').hidden;let t;
   if(!timed||el('choice').value==='new'){
     const title=el('titleInput').value.trim();if(!title)return el('titleInput').focus();
-    t=(!timed&&detailsTask)||{title,level:2,due:'',dueTime:'',group:page==='버킷리스트'?'버킷리스트':'내 할 일',reason:'직접 추가',today:page==='오늘'};t.title=title;if(!timed)Object.assign(t,{level:Number(el('level').value),due:el('due').value,dueTime:el('dueTime').value});if(!tasks.includes(t))tasks.push(t)
+    t=(!timed&&detailsTask)||{title,level:5,due:'',dueTime:'',group:page==='버킷리스트'?'버킷리스트':'내 할 일',reason:'직접 추가',today:page==='오늘'};t.title=title;if(!timed)Object.assign(t,{level:Number(el('level').value),due:el('due').value,dueTime:el('dueTime').value});if(!tasks.includes(t))tasks.push(t)
   }else t=tasks[Number(el('choice').value)];
   if(timed)Object.assign(t,{at:startMinute(),len:Number(el('minutes').value),today:true});
   el('editor').close();save(t)
