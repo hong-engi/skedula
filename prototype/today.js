@@ -112,6 +112,7 @@ function drawTimeline(){
       while(lane+span<ends.length && !cluster.some(([other,col])=>
         col===lane+span && other.at<t.at+t.len && t.at<other.at+other.len))span++;
       const card=t.fixed?node('div'):button('',()=>openTime(t,t.at,t.len));
+      if(t.done)card.disabled=true;
       card.className='event'+(t.fixed?' fixed':'')+(t.done?' done':'');
       Object.assign(card.style,{top:t.at/1440*100+'%',height:t.len/1440*100+'%',left:lane/ends.length*100+'%',width:'calc('+span*100/ends.length+'% - '+(ends.length>1?3:0)+'px)'});
       card.classList.toggle('concurrent',ends.length>1);
