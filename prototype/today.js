@@ -56,23 +56,36 @@ function save(task){
 }
 function clock(m){return [Math.floor(m/60),m%60].map(v=>String(v).padStart(2,'0')).join(':')}
 function range(t){return clock(t.at)+'–'+clock(t.at+t.len)}
-let page=location.hash==='#week'?'주간':location.hash==='#tasks'?'할 일':'오늘', drawing=null;
+let page=location.hash==='#month'?'월간':location.hash==='#week'?'주간':location.hash==='#tasks'?'할 일':'오늘', drawing=null;
+const views=['오늘','주간','월간'];
+let calendarView=views.includes(page)?page:'오늘';
+let anchorDate=dayKey;
 const bookings=loadBookings();
 function icon(symbol,name,action){
   const b=button(symbol,action); b.title=name;b.setAttribute('aria-label',name);return b
 }
 let timelinePositioned=false;
-function navigate(next){page=next;render();if(next==='오늘'&&!timelinePositioned)jumpToNow()}
+function navigate(next){
+  page=next==='캘린더'?calendarView:next;
+  if(views.includes(page))calendarView=page;
+  if(page==='오늘')anchorDate=dayKey;
+  render();if(page==='오늘'&&!timelinePositioned)jumpToNow()
+}
+el('calendarViews').querySelectorAll('button').forEach(b=>b.onclick=()=>navigate(b.textContent));
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>navigate(b.dataset.page));
 function render(){
   const today=page==='오늘', bucket=page==='버킷리스트';
-  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));
-  el('page').textContent=page;el('layout').className=today?'today':'';
-  el('layout').hidden=page==='주간'||page==='메모함';
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.page===(views.includes(page)?'캘린더':page)?'page':'false'));
+  el('calendarViews').hidden=!views.includes(page);
+  el('calendarViews').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.textContent===page));
+  el('month').hidden=page!=='월간';
+  el('page').textContent=views.includes(page)?'캘린더':page;el('layout').className=today?'today':'';
+  el('layout').hidden=page==='주간'||page==='월간'||page==='메모함';
   el('week').hidden=page!=='주간';el('inbox').hidden=page!=='메모함';
   el('add').hidden=page==='메모함';
-  el('add').textContent=page==='주간'?'＋ 약속':'＋';
-  el('add').setAttribute('aria-label',page==='주간'?'약속 추가':'새 항목');
+  el('add').textContent=['주간','월간'].includes(page)?'＋ 약속':'＋';
+  el('add').setAttribute('aria-label',['주간','월간'].includes(page)?'약속 추가':'새 항목');
+  if(page==='월간'){renderMonth();return}
   if(page==='주간'){renderWeek();return}
   if(page==='메모함'){renderInbox();return}
   el('schedule').hidden=!today;el('listTitle').hidden=!today;el('listTitle').textContent='오늘 고른 일';
@@ -186,7 +199,7 @@ function editDetails(t){
   el('due').oninput()
 }
 el('due').oninput=()=>{el('dueTime').disabled=!el('due').value;if(el('dueTime').disabled)el('dueTime').value=''};
-el('add').onclick=()=>page==='주간'?editBooking(null,weekOffset?weekStart():dayKey):editDetails(null);
+el('add').onclick=()=>['주간','월간'].includes(page)?editBooking(null,anchorDate):editDetails(null);
 el('cancel').onclick=()=>el('editor').close();
 el('form').onsubmit=e=>{
   e.preventDefault();const timed=!el('timing').hidden;let t;

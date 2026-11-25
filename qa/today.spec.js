@@ -76,7 +76,7 @@ test('메모를 저장했다가 버킷리스트로 옮겨 오늘에 선택하기
   await expect(page.locator('#ideas')).not.toContainText('한강 자전거');
   await page.getByRole('button',{name:'버킷리스트',exact:true}).click();
   await page.locator('.row').filter({hasText:'한강 자전거'}).getByRole('button',{name:'오늘로 고르기'}).click();
-  await page.getByRole('button',{name:'오늘',exact:true}).click();
+  await page.getByRole('button',{name:'캘린더',exact:true}).click();
   await expect(page.locator('#tasks')).toContainText('한강 자전거');
 });
 
@@ -97,4 +97,15 @@ test('중요도와 남은 시간에 따라 카드색 갱신', async ({ page }) =
   await expect(row.locator('time')).toContainText('마감 지남');
   await row.getByRole('checkbox').check();
   expect(await heat()).toBe(0);
+});
+
+test('캘린더에서 월간 날짜를 열고 주간·오늘으로 전환',async({page})=>{
+  await page.getByRole('button',{name:'월간',exact:true}).click();
+  await page.getByRole('button',{name:'다음 달'}).click();
+  const date=page.locator('.month-day:not(.outside)').nth(15);
+  const label=await date.getAttribute('aria-label');
+  await date.click();
+  await expect(page.getByRole('button',{name:label.replace('주간 보기','약속 추가')})).toBeVisible();
+  await page.getByRole('button',{name:'오늘',exact:true}).click();
+  await expect(page.getByRole('region',{name:'시간표'})).toBeVisible();
 });

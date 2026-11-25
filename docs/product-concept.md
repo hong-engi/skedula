@@ -77,3 +77,7 @@ Skedula를 열면 이미 시간이 정해진 일정, 기한 안에 끝내야 하
 | 이동 시간 | [Apple Calendar 이동 시간](https://support.apple.com/guide/calendar/add-location-and-travel-time-to-events-icl43600/16.0/mac/26) | 직접 입력한 이동 시간을 약속 앞에 별도 블록으로 확보하고 작업 시간 겹침 검사에 포함한다. |
 | 주간 보기 | [Todoist Upcoming](https://www.todoist.com/help/todoist/get-started/plan-your-week-with-the-upcoming-view-OKOg1mR8) | 월요일부터 일요일까지 약속·이동·마감을 훑고 각 날짜에 약속을 추가한다. |
 | 빠른 메모함 | [Todoist Inbox](https://www.todoist.com/help/todoist/get-started/use-the-inbox-in-todoist-HwHvYErS) | 제목 한 줄만 기록하고 필요할 때 할 일이나 버킷리스트로 옮긴다. |
+
+### 캘린더 탐색
+
+사이드바의 캘린더 안에서 오늘·주간·월간을 전환한다. 월간에는 날짜별 약속과 마감을 요약하고, 날짜를 누르면 해당 주를 연다. 오늘 보기는 항상 실제 오늘로 돌아온다. 메모함·할 일·버킷리스트를 다녀오면 직전에 사용한 캘린더 보기가 유지된다.

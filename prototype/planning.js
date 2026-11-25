@@ -1,10 +1,10 @@
-let weekOffset=0, editingBooking=null;
+let editingBooking=null;
 const bookingKey='skedula-calendar-v1';
 function localDate(key){return new Date(key+'T12:00:00')}
 function datePlus(key,n){
   const d=localDate(key);d.setDate(d.getDate()+n);return d.toLocaleDateString('sv-SE')
 }
-function weekStart(){return datePlus(dayKey,weekOffset*7-(localDate(dayKey).getDay()+6)%7)}
+function weekStart(key=anchorDate){return datePlus(key,-(localDate(key).getDay()+6)%7)}
 function loadBookings(){
   const saved=localStorage.getItem(bookingKey);
   if(saved)return JSON.parse(saved);
@@ -40,7 +40,7 @@ function renderWeek(){
   const format=k=>localDate(k).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
   const sameMonth=start.slice(0,7)===end.slice(0,7);
   el('weekRange').textContent=format(start)+' – '+(sameMonth?Number(end.slice(-2))+'일':format(end));
-  el('thisWeek').hidden=weekOffset===0;
+  el('thisWeek').hidden=start===weekStart(dayKey);
   const days=el('weekDays');days.replaceChildren();
   for(let i=0;i<7;i++){
     const date=datePlus(start,i),row=node('div',null,'week-day'),day=node('div',null,'day-label');
@@ -61,6 +61,31 @@ function renderWeek(){
     }
     const add=icon('＋',date+' 약속 추가',()=>editBooking(null,date));
     row.append(day,items,add);days.append(row)
+  }
+}
+function moveMonth(delta){
+  const first=localDate(anchorDate);first.setDate(1);first.setMonth(first.getMonth()+delta);
+  anchorDate=first.toLocaleDateString('sv-SE');renderMonth()
+}
+function renderMonth(){
+  const first=anchorDate.slice(0,7)+'-01',start=weekStart(first),month=first.slice(0,7);
+  el('monthRange').textContent=localDate(first).toLocaleDateString('ko-KR',{year:'numeric',month:'long'});
+  el('thisMonth').hidden=month===dayKey.slice(0,7);
+  const grid=el('monthGrid');grid.replaceChildren();
+  for(const weekday of '월화수목금토일')grid.append(node('small',weekday));
+  for(let i=0;i<42;i++){
+    const date=datePlus(start,i),inMonth=date.startsWith(month);
+    if(i%7===0&&date>first&&!inMonth)break;
+    const cell=button('',()=>{anchorDate=date;navigate('주간')});
+    cell.className='month-day';cell.classList.toggle('outside',!inMonth);
+    if(date===dayKey)cell.setAttribute('aria-current','date');
+    cell.setAttribute('aria-label',date+' 주간 보기');cell.append(node('b',Number(date.slice(-2))));
+    const entries=calendarBlocks(date).filter(t=>!t.buffer).sort((a,b)=>a.at-b.at).map(t=>t.title);
+    if(date===dayKey)entries.push(...tasks.filter(t=>t.at!=null&&!t.inbox).map(t=>t.title));
+    entries.push(...tasks.filter(t=>!t.inbox&&!t.done&&t.due===date).map(t=>'마감 · '+t.title));
+    for(const text of entries.slice(0,2))cell.append(node('span',text));
+    if(entries.length>2)cell.append(node('small','+'+(entries.length-2)));
+    grid.append(cell)
   }
 }
 function editBooking(b,date){
@@ -88,9 +113,11 @@ function renderInbox(){
   }
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  el('prevWeek').onclick=()=>{weekOffset--;renderWeek()};
-  el('nextWeek').onclick=()=>{weekOffset++;renderWeek()};
-  el('thisWeek').onclick=()=>{weekOffset=0;renderWeek();el('nextWeek').focus({preventScroll:true})};
+  el('prevMonth').onclick=()=>moveMonth(-1);el('nextMonth').onclick=()=>moveMonth(1);
+  el('thisMonth').onclick=()=>{anchorDate=dayKey;renderMonth();el('nextMonth').focus()};
+  el('prevWeek').onclick=()=>{anchorDate=datePlus(anchorDate,-7);renderWeek()};
+  el('nextWeek').onclick=()=>{anchorDate=datePlus(anchorDate,7);renderWeek()};
+  el('thisWeek').onclick=()=>{anchorDate=dayKey;renderWeek();el('nextWeek').focus({preventScroll:true})};
   el('booking').oninput=()=>el('bookingEnd').setCustomValidity('');
   el('closeBooking').onclick=()=>el('appointment').close();
   el('removeBooking').onclick=()=>{
