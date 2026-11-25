@@ -172,3 +172,39 @@ test('메모 미리보기 순환, 캘린더 전환과 분류 반영',async({page
   await expect(preview).toContainText('전시 보러 가기');
   await expect(page.locator('#nextMemo')).toBeHidden();
 });
+
+test('12시간 시계에서 양방향 한 바퀴와 오전·오후 전환',async({page})=>{
+  await page.getByRole('button',{name:'할 일',exact:true}).click();
+  await page.locator('.row').first().getByRole('button',{name:'작업 시간 편집'}).click();
+  const face=page.locator('.clock-face');
+  const period=page.locator('.clock-period').first();
+  const marks=await face.locator('span').allTextContents();
+  expect(marks).toEqual(['12','1','2','3','4','5','6','7','8','9','10','11']);
+  // Wait for the dialog's entrance animation before testing pointer geometry.
+  await face.evaluate(async n=>Promise.all(n.getAnimations({subtree:true}).map(a=>a.finished)));
+  const box=await face.boundingBox();
+  const move=tick=>page.mouse.move(box.x+box.width/2+50*Math.sin(tick*Math.PI/6),box.y+box.height/2-50*Math.cos(tick*Math.PI/6));
+  await move(11);await page.mouse.down();
+  for(let i=12;i<=23;i++)await move(i);
+  await expect(period).toHaveText('오후');
+  for(let i=22;i>=11;i--)await move(i);
+  await page.mouse.up();
+  await expect(period).toHaveText('오전');
+  await period.click();
+  await expect(face).toHaveAttribute('aria-valuetext','오후 11시');
+});
+
+test('시간표 드래그 미리보기는 15분 경계에서 즉시 바뀐다',async({page})=>{
+  const grid=page.locator('#timeline');
+  await page.locator('#scroll').evaluate(n=>{n.scrollTop=0});
+  const b=await grid.boundingBox();
+  const move=m=>page.mouse.move(b.x+20,b.y+m*b.height/1440);
+  await move(60);await page.mouse.down();await move(77);
+  const ghost=page.locator('.ghost');
+  await expect(ghost).toHaveText('01:00–01:15');
+  await expect(ghost).toHaveCSS('transition-duration','0s');
+  await move(85);await expect(ghost).toHaveText('01:00–01:30');
+  await page.mouse.up();
+  await expect(page.locator('#editor')).toBeVisible();
+  await expect(page.getByRole('button',{name:'종료 오전 30분 조정'})).toBeVisible();
+});
