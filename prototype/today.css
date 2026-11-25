@@ -14,7 +14,7 @@ html,main,#scroll,dialog{scrollbar-width:none}
 .now-line{position:absolute;inset-inline:0;height:1px;background:#b95239;z-index:2;pointer-events:none}.now-line::before{content:"";position:absolute;left:-3px;top:-2px;width:5px;height:5px;border-radius:50%;background:inherit}
 .event{min-width:0;display:block;text-overflow:ellipsis;white-space:nowrap;align-content:center}.event.concurrent{box-shadow:inset 0 0 0 1px #29493522}
 .week-bar,#capture,.idea-row{display:flex;align-items:center;gap:10px}.week-bar{justify-content:space-between;margin-bottom:16px}.week-pager{display:inline-flex;align-items:center;gap:6px}
-.week-pager h2{margin:0;text-align:center;font-size:16px;font-weight:650;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.week-pager h2{margin:0;text-align:center;font-size:13px;font-weight:500;color:#52655a;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .week-bar button{background:transparent;color:#58685e;border-radius:5px}
 .week-arrow{display:grid;place-items:center;width:32px;height:32px;padding:0}
 .week-arrow::before{content:"";width:7px;height:7px;border-top:1.6px solid;border-right:1.6px solid;transform:rotate(45deg)}
