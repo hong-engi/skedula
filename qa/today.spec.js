@@ -29,3 +29,17 @@ test('배정한 할 일을 완료한 뒤 시간표의 완료 상태 확인', asy
   await expect(page.locator('.event.done')).toContainText('회신 보내기');
   await expect(page.locator('.event.done')).toBeDisabled();
 });
+
+test('스크롤바 없이 휠과 키보드로 시간표 탐색', async ({ page }) => {
+  const timeline = page.getByRole('region', { name: '시간표' });
+  await expect(timeline).toHaveCSS('scrollbar-width', 'none');
+  await expect(page.locator('.now-line')).toHaveAttribute('datetime', /^\d{2}:\d{2}$/);
+  await timeline.focus();
+  await page.keyboard.press('Home');
+  await expect.poll(() => timeline.evaluate(node => node.scrollTop)).toBe(0);
+  await timeline.hover();
+  await page.mouse.wheel(0, 240);
+  await expect.poll(() => timeline.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  await page.keyboard.press('End');
+  await expect.poll(() => timeline.evaluate(node => node.scrollHeight - node.clientHeight - node.scrollTop)).toBeLessThan(2);
+});

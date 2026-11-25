@@ -88,11 +88,12 @@ function render(){
   if(today)drawTimeline()
 }
 const grid=el('timeline');
-const nowLine=node('div',null,'now-line');
+const nowLine=node('time',null,'now-line');
 function updateNow(){
   const local=new Date(), minute=local.getHours()*60+local.getMinutes();
   nowLine.style.top=minute/1440*100+'%';
-  el('nowClock').textContent='현재 '+clock(minute);
+  nowLine.dateTime=clock(minute);
+  nowLine.setAttribute('aria-label','현재 '+clock(minute));
   return minute
 }
 function jumpToNow(){
@@ -100,7 +101,6 @@ function jumpToNow(){
   const scroll=el('scroll');
   scroll.scrollTop=grid.clientHeight*updateNow()/1440-scroll.clientHeight*.45
 }
-el('nowClock').onclick=jumpToNow;
 function drawTimeline(){
   grid.replaceChildren();
   for(let h=0;h<=24;h++){const tick=node('div',null,'tick');tick.style.top=h/24*100+'%';tick.append(node('time',clock(h*60)));grid.append(tick)}

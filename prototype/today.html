@@ -3,7 +3,7 @@
 <title>Skedula · 오늘</title><link rel="stylesheet" href="today.css"><link rel="stylesheet" href="range-clock.css">
 <aside><strong>Skedula</strong><nav aria-label="페이지"><button data-page="오늘">오늘</button><button data-page="할 일">할 일</button><button data-page="버킷리스트">버킷리스트</button></nav></aside>
 <main><header><div><small id="date"></small><h1 id="page"></h1></div><button id="add" title="새 항목" aria-label="새 항목">＋</button></header>
-<div id="layout"><section id="schedule"><div class="schedule-head"><h2>시간표</h2><button id="nowClock" title="현재 시각으로 이동" aria-label="현재 시각으로 이동"></button></div><p>빈 시간을 드래그해 작업 시간을 정하세요.</p><div id="scroll"><div id="timeline"></div></div></section><section id="list"><h2 id="listTitle"></h2><div id="tasks"></div></section></div></main>
+<div id="layout"><section id="schedule"><h2 id="schedule-title">시간표</h2><div id="scroll" tabindex="0" role="region" aria-labelledby="schedule-title"><div id="timeline"></div></div></section><section id="list"><h2 id="listTitle"></h2><div id="tasks"></div></section></div></main>
 <dialog id="editor"><form id="form"><h2 id="heading"></h2><label id="nameLabel">이름<input id="titleInput" maxlength="100"></label>
 <div id="details"><label>중요도 (1–10)<input id="level" type="number" min="1" max="10" step="1" required></label><div class="pair"><label>마감일 · 선택<input type="date" id="due"></label><label>마감 시각 · 선택<input type="time" id="dueTime"></label></div></div>
 <div id="timing"><label>할 일<select id="choice"></select></label><div id="rangeClock"></div><p id="hint" role="status"></p></div><footer><button type="button" id="cancel">취소</button><button class="primary">저장</button></footer></form></dialog>
