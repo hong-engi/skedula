@@ -30,6 +30,11 @@ function calendarBlocks(date){
   }
   return blocks
 }
+function agendaEntry(when,title,action){
+  const entry=button('',action);
+  entry.append(node('span',when,'agenda-time'),'　',node('span',title));
+  return entry
+}
 function renderWeek(){
   const start=weekStart(),end=datePlus(start,6);
   const format=k=>localDate(k).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
@@ -46,13 +51,13 @@ function renderWeek(){
     if(date===dayKey)events.push(...tasks.filter(t=>t.at!=null&&!t.inbox));
     events.sort((a,b)=>a.at-b.at);
     for(const t of events){
-      const line=button(range(t)+'　'+t.title+(t.repeat==='daily'?' · 매일':t.repeat==='weekly'?' · 매주':''),()=>{
+      const line=agendaEntry(range(t),t.title+(t.repeat==='daily'?' · 매일':t.repeat==='weekly'?' · 매주':''),()=>{
         if(t.fixed)editBooking(t.source);else editDetails(t)
       });
       if(t.buffer)line.className='travel-item';items.append(line)
     }
     for(const t of tasks.filter(t=>!t.inbox&&!t.done&&t.due===date)){
-      items.append(button('마감 '+(t.dueTime||'')+'　'+t.title,()=>editDetails(t)))
+      items.append(agendaEntry(('마감 '+(t.dueTime||'')).trim(),t.title,()=>editDetails(t)))
     }
     const add=icon('＋',date+' 약속 추가',()=>editBooking(null,date));
     row.append(day,items,add);days.append(row)

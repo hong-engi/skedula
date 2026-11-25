@@ -23,3 +23,26 @@ html,main,#scroll,dialog{scrollbar-width:none}
 .week-bar button:hover{background:#edf0e9;filter:none}
 .week-bar button:focus-visible{outline:2px solid #42715f;outline-offset:-2px}
 .week-day{display:grid;grid-template-columns:50px minmax(0,1fr) 32px;gap:12px;align-items:start;border-top:1px solid #dce3d9;padding:12px 0;min-height:58px}.day-label{display:flex;align-items:baseline;gap:5px}.day-label strong{font-size:20px}.is-today .day-label{color:#176b43}.agenda{display:grid;gap:4px}.agenda button{text-align:left;background:#f2f4ed;overflow-wrap:anywhere}.agenda .travel-item,.buffer{background:#eef1f0;color:#55695e}.week-day>button{padding:5px}.idea-row{padding:12px 0;border-bottom:1px solid #dde4da;flex-wrap:wrap}.idea-row span{flex:1;min-width:120px;overflow-wrap:anywhere}#capture{margin-bottom:20px}#capture input{min-width:0;flex:1;border:1px solid #cbd5c9;border-radius:8px;padding:10px;font:inherit}#removeBooking{margin-right:auto;color:#804a39}@media(max-width:610px){aside{flex-wrap:wrap}nav{flex-wrap:wrap}nav button{width:auto}}
+
+/* Navigation recedes behind the planner content. */
+body{background:#fafaf7;color:#28392f}
+aside{background:#edf1ea;color:#1d4436;border-right:1px solid #dfe5dc}
+aside strong{letter-spacing:-1.3px}
+nav button{display:flex;align-items:center;gap:10px;color:#48594e;font-size:14px;border-radius:7px}
+nav button[aria-current=page]{background:#d8e4d8;color:#204833;font-weight:650}
+nav svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+h1{font-size:29px;letter-spacing:-1px}h2{font-size:16px}
+#layout.today{align-items:start}
+#list:has(#listTitle[hidden]){background:transparent;padding:0;border:0}
+.row .actions button,.week-day>button{background:transparent;color:#58695c}
+.row .actions button:hover,.week-day>button:hover{background:#e4ebe1}
+.task-name::after{content:none}
+.week-day{align-items:center}
+.day-label strong{font-size:17px;font-variant-numeric:tabular-nums}
+.is-today .day-label strong{background:#315a43;color:white;border-radius:6px;padding:2px 4px}
+.agenda button{display:flex;align-items:baseline;gap:12px;background:transparent;padding:6px 8px;font-size:14px}
+.agenda button:hover{background:#f1f4ee}
+.agenda-time{width:84px;flex:none;font-size:12px;color:#596b60;font-variant-numeric:tabular-nums}
+@media(hover:hover){.week-day>button{opacity:0}.week-day:hover>button,.week-day:focus-within>button{opacity:1}}
+@media(max-width:840px){nav button{gap:6px;padding-inline:6px}}
+@media(max-width:610px){.agenda button{flex-wrap:wrap;gap:2px 8px}.agenda-time{width:auto}}
