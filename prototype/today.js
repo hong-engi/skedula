@@ -55,7 +55,7 @@ function render(){
   const today=page==='오늘', bucket=page==='버킷리스트';
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));
   el('page').textContent=page;el('layout').className=today?'today':'';
-  el('order').hidden=today||bucket;el('schedule').hidden=!today;el('listTitle').textContent=today?'오늘 고른 일':page+' 목록';
+  el('schedule').hidden=!today;el('listTitle').textContent=today?'오늘 고른 일':page+' 목록';
   const items=tasks.filter(t=>today?t.today:(t.group==='버킷리스트')===bucket).sort(compareTasks);
   const list=el('tasks');list.replaceChildren();
   if(!items.length){list.append(node('p',today?'오늘 하기로 고른 일이 없습니다.':'아직 항목이 없습니다.'));if(today)list.append(button('할 일에서 고르기',()=>navigate('할 일')))}

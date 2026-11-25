@@ -53,3 +53,11 @@ Skedula를 열면 이미 시간이 정해진 일정, 기한 안에 끝내야 하
 ### 작업 시간 입력 방식 비교
 
 길이 슬라이더를 제거했다. [비교 창](../prototype/time-studies.html)에서 같은 오후 일정에 대해 Apple Calendar의 시간표 드래그, Material Design의 시계판, Calendly의 빈 시간 제시 방식을 응용한 세 시안을 시험한다. 각 시안은 같은 치과 예약을 고려하며 배정 결과는 비교 창 안에서만 유지한다. 채택할 방식은 미정이다.
+
+### 할 일 목록 레퍼런스
+
+목록에는 정렬 규칙을 풀어 쓴 문장을 두지 않는다. 아래는 표시 방식을 비교하기 위한 실제 제품 사례다.
+
+- [Things의 Today 화면](https://culturedcode.com/things/support/articles/4001304/)은 달력 일정과 오늘 할 일을 한 목록에서 구획으로 나눈다. [일정과 마감](https://culturedcode.com/things/support/articles/2803579/)은 각각 설정한다.
+- [Todoist의 Today 화면](https://www.todoist.com/help/todoist/get-started/plan-your-day-with-the-today-view-UVUXaiSs)은 높은 우선순위 작업이 위에 모인 예를 보여준다. [중요도](https://www.todoist.com/help/articles/set-a-priority-in-todoist-Wy82Jp)는 네 단계의 색으로 구분한다.
+- [Apple 미리 알림의 Mac 목록](https://support.apple.com/guide/reminders/add-or-change-reminders-remndc729e28/mac)은 중요도를 느낌표 개수로 표현하고, 선택한 항목에서 날짜와 플래그를 편집한다.
