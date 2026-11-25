@@ -45,12 +45,13 @@ function save(task){
 }
 function clock(m){return [Math.floor(m/60),m%60].map(v=>String(v).padStart(2,'0')).join(':')}
 function range(t){return clock(t.at)+'–'+clock(t.at+t.len)}
-let page='오늘', drawing=null;
+let page=location.hash==='#tasks'?'할 일':'오늘', drawing=null;
 const fixed={title:'치과 예약',at:900,len:30,fixed:true};
 function icon(symbol,name,action){
   const b=button(symbol,action); b.title=name;b.setAttribute('aria-label',name);return b
 }
-function navigate(next){page=next;render()}
+let timelinePositioned=false;
+function navigate(next){page=next;render();if(next==='오늘'&&!timelinePositioned)jumpToNow()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>navigate(b.dataset.page));
 function render(){
   const today=page==='오늘', bucket=page==='버킷리스트';
@@ -61,15 +62,21 @@ function render(){
   const list=el('tasks');list.replaceChildren();
   if(!items.length){list.append(node('p',today?'오늘 하기로 고른 일이 없습니다.':'아직 항목이 없습니다.'));if(today)list.append(button('할 일에서 고르기',()=>navigate('할 일')))}
   for(const t of items){
-    const row=node('div',null,'row'), label=node('label'), check=node('input');
+    const row=node('div',null,'row'), check=node('input');
     check.type='checkbox';check.checked=!!t.done;check.onchange=()=>{t.done=check.checked;save(t)};
     check.setAttribute('aria-label',t.title+' 완료');
     const name=button(t.title,()=>editDetails(t));name.className='task-name';name.title='이름, 중요도, 마감 편집';name.setAttribute('aria-label',t.title+' 편집');
-    const meta=node('div',null,'meta');
-    meta.append(node('span','중요도 '+t.level,'level'),node('span',dueText(t),daysLeft(t)<=3?'due urgent':'due'));
-    if(t.at!=null)meta.append(node('span',range(t)));
+    const badge=node('span',String(t.level),'priority-mark');
+    badge.title='중요도 '+t.level+'점';badge.setAttribute('role','img');badge.setAttribute('aria-label',badge.title);
+    const info=node('div',null,'info');info.append(name);
+    if(t.at!=null)info.append(node('div',range(t),'meta'));
     row.dataset.index=tasks.indexOf(t);row.style.setProperty('--importance',t.level/10);row.classList.toggle('finished',!!t.done);
-    const info=node('div',null,'info');info.append(name,meta);row.append(check,info);
+    row.append(check,badge,info);
+    if(t.due){
+      const due=node('time',dueText(t),daysLeft(t)<=3?'due urgent':'due');
+      due.dateTime=t.due+(t.dueTime?'T'+t.dueTime:'');due.title='마감 '+t.due+(t.dueTime?' '+t.dueTime:'');
+      row.append(due)
+    }
     if(!t.done){
       const actions=node('div',null,'actions');row.append(actions);
       if(t.at==null)actions.append(icon(t.today?'★':'☆',t.today?'오늘 선택 해제':'오늘로 고르기',()=>{t.today=!t.today;save(t)}));
@@ -89,6 +96,7 @@ function updateNow(){
   return minute
 }
 function jumpToNow(){
+  timelinePositioned=true;
   const scroll=el('scroll');
   scroll.scrollTop=grid.clientHeight*updateNow()/1440-scroll.clientHeight*.45
 }
@@ -172,7 +180,7 @@ el('form').onsubmit=e=>{
   el('editor').close();save(t)
 };
 render();
-jumpToNow();
+if(page==='오늘')jumpToNow();
 function refreshClock(){
   if(new Date().toLocaleDateString('sv-SE')!==dayKey && !el('editor').open){location.reload();return}
   updateNow()
