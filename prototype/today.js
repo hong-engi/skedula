@@ -108,7 +108,7 @@ grid.onpointerup=e=>{if(!drawing)return;const [a,n]=bounds(drawing.anchor,snap(e
 function dialog(timed){
   el('details').hidden=timed;el('timing').hidden=!timed;el('nameLabel').hidden=timed;
   el('titleInput').disabled=timed;el('titleInput').required=!timed;
-  el('start').disabled=!timed;el('titleInput').value='';el('editor').showModal()
+  el('minutes').disabled=!timed;el('start').disabled=!timed;el('titleInput').value='';el('editor').showModal()
 }
 function openTime(task,at,len){
   const choice=el('choice');choice.replaceChildren();
@@ -119,7 +119,7 @@ function openTime(task,at,len){
   el('heading').textContent='작업 시간';dialog(true);choice.onchange();updateRange()
 }
 function startMinute(){const [h,m]=el('start').value.split(':').map(Number);return h*60+m}
-function updateRange(){const at=startMinute();if(!Number.isFinite(at))return;el('minutes').max=Math.min(1440-at,Math.max(180,Number(el('minutes').value)));el('span').textContent=range({at,len:Number(el('minutes').value)});updateTimeHint()}
+function updateRange(){const at=startMinute();if(!Number.isFinite(at))return;el('minutes').max=1440-at;el('span').textContent=range({at,len:Number(el('minutes').value)});updateTimeHint()}
 function updateTimeHint(){
   const chosen=el('choice').value;
   const task=chosen==='new'?null:tasks[Number(chosen)];
