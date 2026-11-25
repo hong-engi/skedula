@@ -61,3 +61,7 @@ Skedula를 열면 이미 시간이 정해진 일정, 기한 안에 끝내야 하
 - [Things의 Today 화면](https://culturedcode.com/things/support/articles/4001304/)은 달력 일정과 오늘 할 일을 한 목록에서 구획으로 나눈다. [일정과 마감](https://culturedcode.com/things/support/articles/2803579/)은 각각 설정한다.
 - [Todoist의 Today 화면](https://www.todoist.com/help/todoist/get-started/plan-your-day-with-the-today-view-UVUXaiSs)은 높은 우선순위 작업이 위에 모인 예를 보여준다. [중요도](https://www.todoist.com/help/articles/set-a-priority-in-todoist-Wy82Jp)는 네 단계의 색으로 구분한다.
 - [Apple 미리 알림의 Mac 목록](https://support.apple.com/guide/reminders/add-or-change-reminders-remndc729e28/mac)은 중요도를 느낌표 개수로 표현하고, 선택한 항목에서 날짜와 플래그를 편집한다.
+
+### 오늘 시간표의 밀도와 동시 일정
+
+창 높이에 맞춰 약 10시간을 한눈에 보여 주고, 스크롤로 하루 전체를 탐색한다. 현재 시각을 분 단위로 갱신하며 시간표 머리의 시각을 누르면 현재 위치로 돌아간다. 시간이 겹치는 일정은 같은 시간선에서 열을 나누고, 앞 일정이 끝나는 시각에 바로 시작하는 일정은 같은 열을 쓸 수 있다.

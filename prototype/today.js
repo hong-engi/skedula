@@ -81,6 +81,18 @@ function render(){
   if(today)drawTimeline()
 }
 const grid=el('timeline');
+const nowLine=node('div',null,'now-line');
+function updateNow(){
+  const local=new Date(), minute=local.getHours()*60+local.getMinutes();
+  nowLine.style.top=minute/1440*100+'%';
+  el('nowClock').textContent='현재 '+clock(minute);
+  return minute
+}
+function jumpToNow(){
+  const scroll=el('scroll');
+  scroll.scrollTop=grid.clientHeight*updateNow()/1440-scroll.clientHeight*.45
+}
+el('nowClock').onclick=jumpToNow;
 function drawTimeline(){
   grid.replaceChildren();
   for(let h=0;h<=24;h++){const tick=node('div',null,'tick');tick.style.top=h/24*100+'%';tick.append(node('time',clock(h*60)));grid.append(tick)}
@@ -88,14 +100,18 @@ function drawTimeline(){
   let cluster=[], ends=[];
   function place(){
     for(const [t,lane] of cluster){
+      let span=1;
+      while(lane+span<ends.length && !cluster.some(([other,col])=>
+        col===lane+span && other.at<t.at+t.len && t.at<other.at+other.len))span++;
       const card=t.fixed?node('div'):button('',()=>openTime(t,t.at,t.len));
       card.className='event'+(t.fixed?' fixed':'')+(t.done?' done':'');
-      Object.assign(card.style,{top:t.at/1440*100+'%',height:t.len/1440*100+'%',left:lane/ends.length*100+'%',width:100/ends.length+'%'});
+      Object.assign(card.style,{top:t.at/1440*100+'%',height:t.len/1440*100+'%',left:lane/ends.length*100+'%',width:'calc('+span*100/ends.length+'% - '+(ends.length>1?3:0)+'px)'});
+      card.classList.toggle('concurrent',ends.length>1);
       card.title=t.title+' · '+range(t);card.textContent=card.title;grid.append(card)
     }
     cluster=[];ends=[]
   }
-  for(const t of events){if(ends.length&&Math.max(...ends)<=t.at)place();let lane=ends.findIndex(end=>end<=t.at);if(lane<0)lane=ends.length;ends[lane]=t.at+t.len;cluster.push([t,lane])}place()
+  for(const t of events){if(ends.length&&Math.max(...ends)<=t.at)place();let lane=ends.findIndex(end=>end<=t.at);if(lane<0)lane=ends.length;ends[lane]=t.at+t.len;cluster.push([t,lane])}place();grid.append(nowLine);updateNow()
 }
 function snap(e){const rect=grid.getBoundingClientRect();return Math.max(0,Math.min(1440,Math.round((e.clientY-rect.top)/rect.height*96)*15))}
 function bounds(a,b){const start=Math.min(a,b,1425);return [start,Math.max(15,Math.max(a,b)-start)]}
@@ -156,4 +172,13 @@ el('form').onsubmit=e=>{
   el('editor').close();save(t)
 };
 render();
-el('scroll').scrollTop=15*84-el('scroll').clientHeight*.65;
+jumpToNow();
+function refreshClock(){
+  if(new Date().toLocaleDateString('sv-SE')!==dayKey && !el('editor').open){location.reload();return}
+  updateNow()
+}
+function nextMinute(){
+  setTimeout(()=>{refreshClock();nextMinute()},60000-Date.now()%60000)
+}
+nextMinute();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshClock()});
