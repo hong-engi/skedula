@@ -43,3 +43,39 @@ test('스크롤바 없이 휠과 키보드로 시간표 탐색', async ({ page }
   await page.keyboard.press('End');
   await expect.poll(() => timeline.evaluate(node => node.scrollHeight - node.clientHeight - node.scrollTop)).toBeLessThan(2);
 });
+
+test('주간 약속, 이동 시간, 반복 일정을 저장하고 편집하기', async ({ page }) => {
+  await page.getByRole('button', {name:'주간',exact:true}).click();
+  await page.getByRole('button', {name:'약속 추가',exact:true}).click();
+  const form=page.locator('#booking');
+  await form.getByLabel('이름').fill('독서 모임');
+  await form.getByLabel('시작').fill('15:00');
+  await form.getByLabel('종료').fill('16:00');
+  await form.getByLabel('반복').selectOption('weekly');
+  await form.getByLabel('이동 시간(분)').fill('20');
+  await form.getByRole('button',{name:'저장'}).click();
+  await page.getByRole('button',{name:'다음 주'}).click();
+  await expect(page.locator('.agenda .travel-item')).toHaveText('14:40–15:00　이동 · 독서 모임');
+  await page.reload();
+  await expect(page.locator('#timeline .buffer')).toContainText('14:40–15:00');
+  await page.getByRole('button', {name:'주간',exact:true}).click();
+  await page.getByRole('button',{name:'15:00–16:00　독서 모임 · 매주'}).click();
+  await form.getByLabel('이름').fill('글쓰기 모임');
+  await form.getByRole('button',{name:'저장'}).click();
+  await page.getByRole('button',{name:'다음 주'}).click();
+  await expect(page.locator('.agenda')).toContainText(['글쓰기 모임']);
+});
+
+test('메모를 저장했다가 버킷리스트로 옮겨 오늘에 선택하기', async ({ page }) => {
+  await page.getByRole('button',{name:'메모함',exact:true}).click();
+  await page.getByLabel('빠른 메모').fill('한강 자전거');
+  await page.getByRole('button',{name:'담기'}).click();
+  await page.reload();
+  await page.getByRole('button',{name:'메모함',exact:true}).click();
+  await page.getByRole('button',{name:'버킷리스트로'}).click();
+  await expect(page.locator('#ideas')).not.toContainText('한강 자전거');
+  await page.getByRole('button',{name:'버킷리스트',exact:true}).click();
+  await page.locator('.row').filter({hasText:'한강 자전거'}).getByRole('button',{name:'오늘로 고르기'}).click();
+  await page.getByRole('button',{name:'오늘',exact:true}).click();
+  await expect(page.locator('#tasks')).toContainText('한강 자전거');
+});

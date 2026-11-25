@@ -65,3 +65,15 @@ Skedula를 열면 이미 시간이 정해진 일정, 기한 안에 끝내야 하
 ### 오늘 시간표의 밀도와 동시 일정
 
 창 높이에 맞춰 약 10시간을 한눈에 보여 주고, 스크롤로 하루 전체를 탐색한다. 처음 열면 현재 시간대가 보이고, 시간표 안의 얇은 선이 분 단위로 이동한다. 스크롤바는 숨기며 트랙패드와 키보드로 하루 전체를 탐색한다. 시간이 겹치는 일정은 같은 시간선에서 열을 나누고, 앞 일정이 끝나는 시각에 바로 시작하는 일정은 같은 열을 쓸 수 있다.
+
+### 일주일을 계획하는 기능 시안
+
+‘주간’에서 날짜별 약속·이동·할 일 마감을 함께 확인하고, ‘메모함’에서 아이디어를 모아 나중에 분류하는 흐름을 시험한다.
+
+| 기능 | 참고 사례 | 시안에서 할 수 있는 일 |
+| --- | --- | --- |
+| 날짜가 있는 약속 | [Apple Calendar 일정](https://support.apple.com/guide/calendar/add-modify-or-delete-events-icalwr13-events/mac) | 날짜·시작·종료를 지정하고 오늘 시간표와 주간 목록에서 수정한다. |
+| 반복 일정 | [Apple Calendar 반복](https://support.apple.com/en-ie/guide/calendar/icl1018/mac) | 매일 또는 매주 반복하며 시리즈 전체를 편집·삭제한다. |
+| 이동 시간 | [Apple Calendar 이동 시간](https://support.apple.com/guide/calendar/add-location-and-travel-time-to-events-icl43600/16.0/mac/26) | 직접 입력한 이동 시간을 약속 앞에 별도 블록으로 확보하고 작업 시간 겹침 검사에 포함한다. |
+| 주간 보기 | [Todoist Upcoming](https://www.todoist.com/help/todoist/get-started/plan-your-week-with-the-upcoming-view-OKOg1mR8) | 월요일부터 일요일까지 약속·이동·마감을 훑고 각 날짜에 약속을 추가한다. |
+| 빠른 메모함 | [Todoist Inbox](https://www.todoist.com/help/todoist/get-started/use-the-inbox-in-todoist-HwHvYErS) | 제목 한 줄만 기록하고 필요할 때 할 일이나 버킷리스트로 옮긴다. |

@@ -45,8 +45,8 @@ function save(task){
 }
 function clock(m){return [Math.floor(m/60),m%60].map(v=>String(v).padStart(2,'0')).join(':')}
 function range(t){return clock(t.at)+'–'+clock(t.at+t.len)}
-let page=location.hash==='#tasks'?'할 일':'오늘', drawing=null;
-const fixed={title:'치과 예약',at:900,len:30,fixed:true};
+let page=location.hash==='#week'?'주간':location.hash==='#tasks'?'할 일':'오늘', drawing=null;
+const bookings=loadBookings();
 function icon(symbol,name,action){
   const b=button(symbol,action); b.title=name;b.setAttribute('aria-label',name);return b
 }
@@ -57,8 +57,15 @@ function render(){
   const today=page==='오늘', bucket=page==='버킷리스트';
   document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));
   el('page').textContent=page;el('layout').className=today?'today':'';
+  el('layout').hidden=page==='주간'||page==='메모함';
+  el('week').hidden=page!=='주간';el('inbox').hidden=page!=='메모함';
+  el('add').hidden=page==='메모함';
+  el('add').textContent=page==='주간'?'＋ 약속':'＋';
+  el('add').setAttribute('aria-label',page==='주간'?'약속 추가':'새 항목');
+  if(page==='주간'){renderWeek();return}
+  if(page==='메모함'){renderInbox();return}
   el('schedule').hidden=!today;el('listTitle').textContent=today?'오늘 고른 일':page+' 목록';
-  const items=tasks.filter(t=>today?t.today:(t.group==='버킷리스트')===bucket).sort(compareTasks);
+  const items=tasks.filter(t=>!t.inbox).filter(t=>today?t.today:(t.group==='버킷리스트')===bucket).sort(compareTasks);
   const list=el('tasks');list.replaceChildren();
   if(!items.length){list.append(node('p',today?'오늘 하기로 고른 일이 없습니다.':'아직 항목이 없습니다.'));if(today)list.append(button('할 일에서 고르기',()=>navigate('할 일')))}
   for(const t of items){
@@ -104,16 +111,16 @@ function jumpToNow(){
 function drawTimeline(){
   grid.replaceChildren();
   for(let h=0;h<=24;h++){const tick=node('div',null,'tick');tick.style.top=h/24*100+'%';tick.append(node('time',clock(h*60)));grid.append(tick)}
-  const events=[fixed,...tasks.filter(t=>t.at!=null)].sort((a,b)=>a.at-b.at);
+  const events=[...calendarBlocks(dayKey),...tasks.filter(t=>t.at!=null)].sort((a,b)=>a.at-b.at);
   let cluster=[], ends=[];
   function place(){
     for(const [t,lane] of cluster){
       let span=1;
       while(lane+span<ends.length && !cluster.some(([other,col])=>
         col===lane+span && other.at<t.at+t.len && t.at<other.at+other.len))span++;
-      const card=t.fixed?node('div'):button('',()=>openTime(t,t.at,t.len));
+      const card=button('',()=>t.fixed?editBooking(t.source):openTime(t,t.at,t.len));
       if(t.done)card.disabled=true;
-      card.className='event'+(t.fixed?' fixed':'')+(t.done?' done':'');
+      card.className='event'+(t.fixed?' fixed':'')+(t.done?' done':'')+(t.buffer?' buffer':'');
       Object.assign(card.style,{top:t.at/1440*100+'%',height:t.len/1440*100+'%',left:lane/ends.length*100+'%',width:'calc('+span*100/ends.length+'% - '+(ends.length>1?3:0)+'px)'});
       card.classList.toggle('concurrent',ends.length>1);
       card.title=t.title+' · '+range(t);card.textContent=card.title;grid.append(card)
@@ -138,7 +145,7 @@ function dialog(timed){
 }
 function openTime(task,at,len){
   const choice=el('choice');choice.replaceChildren();
-  tasks.forEach((t,i)=>{if(!t.done&&(!task||task===t)){const option=node('option',t.title+(t.at!=null?' · '+range(t):''));option.value=i;choice.append(option)}});
+  tasks.forEach((t,i)=>{if(!t.inbox&&!t.done&&(!task||task===t)){const option=node('option',t.title+(t.at!=null?' · '+range(t):''));option.value=i;choice.append(option)}});
   const fresh=node('option','새 작업…');fresh.value='new';if(!task)choice.append(fresh);
   choice.disabled=!!task;if(task)choice.value=tasks.indexOf(task);else choice.value=Array.from(choice.options).find(o=>o.value!=='new' && tasks[o.value].at==null)?.value??'new';
   draftStart=at;draftEnd=at+len;resetClock(draftStart,draftEnd);
@@ -154,7 +161,7 @@ function updateTimeHint(){
   const at=draftStart,end=draftEnd;
   el('form').querySelector('.primary').disabled=end<=at;
   if(end<=at){el('hint').textContent='종료 시각을 시작보다 늦게 선택하세요.';return}
-  const clash=[fixed,...tasks].find(t=>t!==task&&t.at!=null&&t.at<end&&at<t.at+t.len);
+  const clash=[...calendarBlocks(dayKey),...tasks].find(t=>t!==task&&t.at!=null&&t.at<end&&at<t.at+t.len);
   el('hint').textContent=[task?.at!=null?'기존 배정 '+range(task):'',clash?'겹치는 일정 · '+clash.title:''].filter(Boolean).join(' / ')
 }
 
@@ -168,7 +175,7 @@ function editDetails(t){
   el('due').oninput()
 }
 el('due').oninput=()=>{el('dueTime').disabled=!el('due').value;if(el('dueTime').disabled)el('dueTime').value=''};
-el('add').onclick=()=>editDetails(null);
+el('add').onclick=()=>page==='주간'?editBooking(null,weekOffset?weekStart():dayKey):editDetails(null);
 el('cancel').onclick=()=>el('editor').close();
 el('form').onsubmit=e=>{
   e.preventDefault();const timed=!el('timing').hidden;let t;
@@ -183,7 +190,7 @@ el('form').onsubmit=e=>{
 render();
 if(page==='오늘')jumpToNow();
 function refreshClock(){
-  if(new Date().toLocaleDateString('sv-SE')!==dayKey && !el('editor').open){location.reload();return}
+  if(new Date().toLocaleDateString('sv-SE')!==dayKey && !document.querySelector('dialog[open]')){location.reload();return}
   updateNow()
 }
 function nextMinute(){
